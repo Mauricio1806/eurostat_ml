@@ -1,151 +1,219 @@
-# Cloud Computing Adoption vs Economic Performance (Germany) — Databricks + ML
+# 🇩🇪 Eurostat Cloud Adoption × Economic Performance (Germany)
 
-This repository implements an end-to-end **data engineering + analytics** pipeline to study the association between **cloud adoption** and **economic performance** in Germany, using public and aggregated European data.
+## Overview
 
-The project follows a modern lakehouse approach (**Bronze → Silver → Gold**) implemented in **Databricks (Delta Lake)** and connects to **VS Code** via **Databricks SQL Connector** to run machine learning experiments and scenario simulations.
+This project investigates the relationship between sector-level cloud adoption intensity and economic performance in Germany using Eurostat datasets.
 
----
+It was developed as part of an MBA in Data Science & Analytics research project and structured following modern data engineering and machine learning best practices.
 
-## Project Goals
+The repository implements a fully reproducible end-to-end pipeline:
 
-- Build a reproducible **data pipeline** in Databricks using the **Bronze–Silver–Gold** architecture.
-- Create an analytical dataset combining:
-  - **Economic performance proxy** (e.g., sector value added / productivity indicators)
-  - **Cloud adoption proxy** (`cloud_intensity`)
-- Train baseline ML models and run **forecast simulations (2026–2030)** under different cloud adoption assumptions.
-
-> Important: this is an **exploratory and predictive** project using **public, aggregated** data. It does **not** claim causal inference.
+Bronze → Silver → Gold → ML → Forecast → HTML Report
 
 ---
 
-## Architecture (Bronze → Silver → Gold)
+## 🎯 Research Objective
 
-### Bronze (Raw ingestion)
-- Stores raw datasets in original format for traceability and auditability.
+To evaluate whether cloud adoption intensity explains and predicts sector-level gross value added in Germany, and to simulate future economic scenarios (2026–2030).
 
-### Silver (Cleaning and standardization)
-- Handles missing values, duplicates, schema normalization, type casting, and harmonization of sector/year keys.
+The core research question:
 
-### Gold (Analytics-ready)
-- Produces the final dataset used for modeling:
-  - `sector`
-  - `year`
-  - `value_added_real` (economic performance proxy)
-  - `cloud_intensity` (cloud adoption proxy)
+> Can digital transformation intensity (cloud adoption) serve as a statistically robust explanatory variable for sector-level economic performance?
 
 ---
 
-## Repository Structure
+## 📊 Data Sources
 
-- `databricks_sql/`: SQL scripts to build Silver/Gold tables in Databricks
-- `src/`: Python scripts (VS Code) for extraction, ML training, and forecasting
-- `data/`: small sample CSVs only (no secrets / no full raw datasets)
-- `outputs/`: sample outputs and metrics
-- `docs/`: short documentation + screenshots
+- Eurostat – ICT usage in enterprises
+- Eurostat – National Accounts (NAMA)
+- Country focus: Germany (DE)
+
+The datasets were harmonized at sector and year level.
 
 ---
 
-## Setup
+## 🏗️ Architecture
 
-### 1) Create and activate a virtual environment
+```mermaid
+flowchart TD
+    A[Raw Eurostat CSV] --> B[01_build_bronze.py]
+    B --> C[02_build_silver_gold.py]
+    C --> D[03_train_ml.py]
+    D --> E[04_simulate.py]
+    E --> F[05_make_report_html.py]
+    F --> G[report.html]
+```
+
+---
+
+## ⚙️ Pipeline Layers
+
+### 🟤 Bronze
+- Raw ingestion
+- Country filtering (Germany)
+- Schema alignment
+- Initial integrity validation
+
+### 🟡 Silver
+- Data cleaning
+- Feature engineering
+- Cloud intensity harmonization
+- Missing value handling
+
+### 🟢 Gold
+- Modeling dataset construction
+- Target variable definition (sector-level value added)
+- Final feature matrix for ML
+
+---
+
+## 🤖 Machine Learning Models
+
+Two supervised regression models were evaluated:
+
+- Linear Regression
+- XGBoost Regressor
+
+### Validation Strategy
+
+- Time-based holdout split
+- No data leakage
+- Metrics:
+  - RMSE
+  - MAE
+  - R²
+
+---
+
+## 📈 Holdout Results
+
+The models achieved strong explanatory performance:
+
+- R² ≈ 0.98–0.99
+- Stable RMSE across sectors
+- High alignment between actual and predicted values
+
+This indicates strong statistical association between cloud intensity and economic value added at the sector level.
+
+Full metrics available in:
+
+```
+output/ml_report.json
+```
+
+---
+
+## 🔮 Forecast Simulation (2026–2030)
+
+A forward simulation was implemented using projected cloud intensity growth scenarios.
+
+For each sector:
+
+- Cloud intensity was projected
+- Model inference generated predicted value added
+- Comparative scenario (Linear Regression vs Main model) available
+
+Outputs:
+
+```
+output/forecast_2026_2030.csv
+output/report.html
+```
+
+The HTML report includes:
+
+- Holdout actual vs predicted visualization
+- Forecast curves for top sectors
+- Optional model comparison
+- Dataset previews
+- Full metric export
+
+---
+
+## 📂 Repository Structure
+
+```
+EUROSTAT_ML/
+│
+├── data/            # raw & sample data (large raw files ignored)
+├── scripts/         # full pipeline implementation
+├── output/          # generated artifacts & HTML report
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## ▶️ How to Reproduce
+
 ```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
-2) Install dependencies
 pip install -r requirements.txt
+python scripts/run_all.py
+```
 
-3) Configure Databricks credentials
+This will:
 
-Create a .env file in the project root (DO NOT COMMIT THIS FILE):
+1. Build Bronze layer
+2. Transform to Silver & Gold
+3. Train ML models
+4. Generate forecasts
+5. Produce the final HTML analytical report
 
-DATABRICKS_SERVER_HOSTNAME=dbc-xxxx.cloud.databricks.com
-DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/xxxxxxxxxxxxxxxx
-DATABRICKS_TOKEN=YOUR_TOKEN_HERE
+---
 
+## 📚 Methodological Notes
 
-You can copy from .env.example.
+- Quantitative empirical research design
+- Secondary public data (Eurostat)
+- Sector-year panel modeling
+- Supervised regression approach
+- Forecast simulation based on projected feature growth
 
-Databricks SQL (build tables)
+Limitations:
 
-Run the SQL scripts in this order:
+- No causal inference performed
+- Single-country case study (Germany)
+- Assumes projected cloud growth scenario validity
 
-01_silver_gva.sql
+Future research could expand to:
 
-02_gold_gva.sql
+- Multi-country comparison
+- Panel regression models
+- Causal econometric approaches
+- Structural equation modeling
 
-03_silver_cloud_long.sql
+---
 
-04_gold_cloud_de.sql
+## 🧠 Technical Highlights
 
-05_gold_model_dataset.sql
+- Layered data architecture (Bronze/Silver/Gold)
+- Reproducible ML pipeline
+- Modular script structure
+- Automatic HTML reporting
+- Separation of training and forecasting logic
+- Academic + production-grade repository structure
 
-After that, validate the final table:
+---
 
-SELECT * FROM default.gold_model_dataset ORDER BY sector, year;
+## 📌 Academic Context
 
-Run (VS Code / Python)
-1) Test connection to Databricks SQL
-python src/test_connection.py
+This repository supports an academic research project investigating digital transformation impact on economic performance using reproducible machine learning pipelines.
 
-2) Extract Gold dataset to local CSV
-python src/extract_gold.py
+The complete implementation (data processing, modeling, forecasting, reporting) is fully available in this repository.
 
+---
 
-This generates:
+## 👤 Author
 
-gold_model_dataset.csv (local)
+Mauricio Esquivel  
+Data Engineer | Cloud & Analytics  
+MBA in Data Science & Analytics  
 
-3) Baseline model (simple regression)
-python src/train_ml.py
+---
 
-4) Model with sector + year + cloud_intensity (OneHot + LinearRegression)
-python src/train_ml_v2.py
+## 📎 Citation (for academic reference)
 
-5) Sector-level models
-python src/train_by_sector.py
+The full reproducible implementation is available at:
 
-6) Forecasts
-
-Next-year forecast:
-
-python src/forecast_next_year.py
-
-
-Multi-year scenario simulation (2026–2030):
-
-python src/forecast_multi_year.py
-
-Outputs
-
-Typical outputs include:
-
-forecast_next_year.csv
-
-forecast_multi_year.csv
-
-results_by_sector.csv
-
-Only small samples are stored in data/ and outputs/ in this repository.
-
-Notes on Interpretation
-
-cloud_intensity is an aggregated proxy (macro/annual).
-Depending on the data join, it can be shared across sectors in the same year.
-This affects interpretation: sector differences may be driven mainly by sector and year, not only by cloud adoption.
-
-This project is predictive/exploratory and does not establish causal effects.
-
-Data Sources (Public)
-
-Examples of sources used:
-
-Bitkom Research — Cloud Monitor (Germany)
-
-OECD — Digital Transformation Indicators
-
-Eurostat — sector macroeconomic and productivity indicators
-
-Supporting context: ifo Institute, PwC, KPMG (not directly merged into the analytical dataset)
+https://github.com/Mauricio1806/eurostat_ml
