@@ -1,0 +1,32 @@
+﻿# Python / venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# VS Code
+.vscode/
+
+# Large raw data (do NOT commit)
+data/raw/
+data/external/
+
+# Parquet outputs (avoid committing large files)
+*.parquet
+
+# Output: ignore everything by default
+output/*
+# ...but keep small final artifacts
+!output/ml_report.json
+!output/predictions_holdout.csv
+!output/forecast_2026_2030.csv
+!output/forecast_2026_2030_lr.csv
+!output/report.html
+!output/report_assets/
+!output/report_assets/**
+
+# OS
+.DS_Store
+Thumbs.db

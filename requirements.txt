@@ -1,0 +1,6 @@
+﻿pandas==2.3.3
+numpy==2.4.2
+pyarrow==23.0.0
+scikit-learn==1.8.0
+matplotlib==3.10.8
+xgboost==3.2.0

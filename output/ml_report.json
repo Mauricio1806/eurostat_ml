@@ -1,0 +1,17 @@
+{
+  "rows_total": 1332,
+  "rows_train": 1065,
+  "rows_test": 267,
+  "nan_cloud_intensity_before_impute": 774,
+  "nan_cloud_intensity_sector_before_impute": 774,
+  "model_linear_regression": {
+    "rmse": 9191.040410711992,
+    "mae": 6182.656941919261,
+    "r2": 0.9936669617536907
+  },
+  "model_xgboost": {
+    "rmse": 13010.068941663758,
+    "mae": 7175.783184225817,
+    "r2": 0.9873105746408952
+  }
+}
