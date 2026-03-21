@@ -184,7 +184,7 @@ Outputs:
 
 ## 🌐 Live Report
 
-👉 http://SEU-LINK-AQUI/report.html
+👉 file:///C:/Users/mauri/Videos/data-engineering-workspace.code-workspace/eurostat_ml/output/report.html
 
 (Interactive HTML report with full analysis, forecasts and model results)
 
