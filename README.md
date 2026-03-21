@@ -184,7 +184,7 @@ Outputs:
 
 ## 🌐 Live Report
 
-👉 file:///C:/Users/mauri/Videos/data-engineering-workspace.code-workspace/eurostat_ml/output/report.html
+👉 http://mauricio-eurostat-report.s3-website-us-east-1.amazonaws.com/
 
 (Interactive HTML report with full analysis, forecasts and model results)
 
