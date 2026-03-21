@@ -1,10 +1,9 @@
 # 🇩🇪 Eurostat Cloud Adoption × Economic Performance (Germany)
 
 ## Overview
+This project analyzes the relationship between cloud computing adoption and sector-level economic performance in Germany using real Eurostat datasets.
 
-This project investigates the relationship between sector-level cloud adoption intensity and economic performance in Germany using Eurostat datasets.
-
-It was developed as part of an MBA in Data Science & Analytics research project and structured following modern data engineering and machine learning best practices.
+It was developed as part of an MBA in Data Science & Analytics and structured following modern data engineering and machine learning best practices.
 
 The repository implements a fully reproducible end-to-end pipeline:
 
@@ -13,27 +12,26 @@ Bronze → Silver → Gold → ML → Forecast → HTML Report
 ---
 
 ## 🎯 Research Objective
+To evaluate whether cloud adoption intensity explains and predicts sector-level gross value added in Germany.
 
-To evaluate whether cloud adoption intensity explains and predicts sector-level gross value added in Germany, and to simulate future economic scenarios (2026–2030).
-
-The core research question:
-
-> Can digital transformation intensity (cloud adoption) serve as a statistically robust explanatory variable for sector-level economic performance?
+Core research question:
+Can digital transformation intensity (cloud adoption) serve as a statistically robust explanatory variable for economic performance?
 
 ---
 
 ## 📊 Data Sources
+- Eurostat — ICT usage in enterprises (isoc_cicce_usen2)
+- Eurostat — National Accounts (nama_10_a64)
 
-- Eurostat – ICT usage in enterprises
-- Eurostat – National Accounts (NAMA)
-- Country focus: Germany (DE)
+Scope:
+- Country: Germany (DE)
+- Period: 2010–2024
 
 The datasets were harmonized at sector and year level.
 
 ---
 
 ## 🏗️ Architecture
-
 ```mermaid
 flowchart TD
     A[Raw Eurostat CSV] --> B[01_build_bronze.py]
@@ -49,158 +47,207 @@ flowchart TD
 ## ⚙️ Pipeline Layers
 
 ### 🟤 Bronze
-- Raw ingestion
-- Country filtering (Germany)
+- Raw data ingestion from Eurostat (CSV)
+- Filtering for Germany
 - Schema alignment
-- Initial integrity validation
-
-### 🟡 Silver
-- Data cleaning
-- Feature engineering
-- Cloud intensity harmonization
-- Missing value handling
-
-### 🟢 Gold
-- Modeling dataset construction
-- Target variable definition (sector-level value added)
-- Final feature matrix for ML
-
----
-
-## 🤖 Machine Learning Models
-
-Two supervised regression models were evaluated:
-
-- Linear Regression
-- XGBoost Regressor
-
-### Validation Strategy
-
-- Time-based holdout split
-- No data leakage
-- Metrics:
-  - RMSE
-  - MAE
-  - R²
-
----
-
-## 📈 Holdout Results
-
-The models achieved strong explanatory performance:
-
-- R² ≈ 0.98–0.99
-- Stable RMSE across sectors
-- High alignment between actual and predicted values
-
-This indicates strong statistical association between cloud intensity and economic value added at the sector level.
-
-Full metrics available in:
-
-```
-output/ml_report.json
-```
-
----
-
-## 🔮 Forecast Simulation (2026–2030)
-
-A forward simulation was implemented using projected cloud intensity growth scenarios.
-
-For each sector:
-
-- Cloud intensity was projected
-- Model inference generated predicted value added
-- Comparative scenario (Linear Regression vs Main model) available
+- Storage in Parquet format
 
 Outputs:
+- bronze_gva_de.parquet
+- bronze_cloud_de.parquet
 
-```
-output/forecast_2026_2030.csv
-output/report.html
-```
+---
 
-The HTML report includes:
+### 🟡 Silver
+- Data cleaning and standardization
+- Type conversion
+- Missing value handling
+- Structuring by sector and year
 
-- Holdout actual vs predicted visualization
-- Forecast curves for top sectors
-- Optional model comparison
-- Dataset previews
-- Full metric export
+Outputs:
+- silver_gva.parquet
+- silver_cloud.parquet
+
+---
+
+### 🟢 Gold
+- Integration of economic and cloud datasets
+- Feature engineering
+- Final analytical dataset for modeling
+
+Main variables:
+- sector
+- year
+- value_added_clv05_meur
+- cloud_e_cc_pc_ent
+- cloud_intensity
+- cloud_intensity_sector
+- sector_weight
+- target_value_added
+
+Outputs:
+- gold_model_dataset.parquet
+- gold_model_dataset.csv
+
+---
+
+## 🧠 Feature Engineering
+
+- cloud_intensity = cloud_e_cc_pc_ent
+- cloud_intensity_sector = sector average
+- sector_weight = sector share of total value added
+
+Missing values:
+- Global median → cloud_intensity
+- Sector median → cloud_intensity_sector
+
+---
+
+## 🤖 Machine Learning
+
+### Linear Regression
+Baseline econometric model:
+y = β0 + β1x1 + ... + βnxn + ε
+
+### Gradient Boosting (XGBoost)
+- Tree-based ensemble model
+- Sequential learning
+- Regularized optimization
+
+---
+
+## 📏 Validation Strategy
+
+Time-based split (holdout):
+- Train: 2010–2021
+- Test: 2022–2024
+
+Metrics:
+- RMSE
+- MAE
+- R²
+
+---
+
+## 📈 Results
+
+### Linear Regression
+- RMSE ≈ 9191
+- MAE ≈ 6182
+- R² ≈ 0.993
+
+### Gradient Boosting
+- RMSE ≈ 13010
+- MAE ≈ 7175
+- R² ≈ 0.987
+
+### Key Insight
+Both models present strong explanatory power.
+
+The linear model outperformed the ML model on aggregated data, indicating a strong and stable relationship between cloud adoption and economic performance.
+
+---
+
+## 🔮 Forecast (2026–2030)
+
+Simulation based on cloud adoption growth:
+
+cloud_intensity(t+1) = cloud_intensity(t) × (1 + growth_rate)
+
+Predictions:
+ŷ = model.predict(X)
+
+Outputs:
+- forecast_2026_2030.csv
+- forecast_2026_2030_lr.csv
+
+---
+
+## 📊 Generated Outputs
+
+- ml_report.json
+- predictions_holdout.csv
+- forecast_2026_2030.csv
+- forecast_2026_2030_lr.csv
+- report.html
+
+---
+
+## 📊 Visualizations
+
+- Actual vs Predicted (holdout)
+- Forecast by sector (2026–2030)
+- Model comparison
+- Sector deep-dive (B–E)
+
+---
+
+## 🌐 Live Report
+
+👉 http://SEU-LINK-AQUI/report.html
+
+(Interactive HTML report with full analysis, forecasts and model results)
 
 ---
 
 ## 📂 Repository Structure
 
-```
 EUROSTAT_ML/
-│
-├── data/            # raw & sample data (large raw files ignored)
-├── scripts/         # full pipeline implementation
-├── output/          # generated artifacts & HTML report
-├── .gitignore
+├── data/
+├── scripts/
+├── output/
 ├── requirements.txt
 └── README.md
-```
 
 ---
 
 ## ▶️ How to Reproduce
 
-```bash
-pip install -r requirements.txt
-python scripts/run_all.py
-```
+pip install -r requirements.txt  
+python scripts/run_all.py  
 
 This will:
-
-1. Build Bronze layer
-2. Transform to Silver & Gold
-3. Train ML models
-4. Generate forecasts
-5. Produce the final HTML analytical report
+- Build Bronze layer
+- Generate Silver and Gold datasets
+- Train models
+- Generate forecasts
+- Produce HTML report
 
 ---
 
-## 📚 Methodological Notes
+## 🧪 Methodological Notes
 
-- Quantitative empirical research design
-- Secondary public data (Eurostat)
-- Sector-year panel modeling
-- Supervised regression approach
-- Forecast simulation based on projected feature growth
+- Quantitative empirical research
+- Public Eurostat data
+- Sector-year panel structure
+- Supervised regression
+- Forecast simulation via feature projection
 
 Limitations:
-
-- No causal inference performed
-- Single-country case study (Germany)
-- Assumes projected cloud growth scenario validity
-
-Future research could expand to:
-
-- Multi-country comparison
-- Panel regression models
-- Causal econometric approaches
-- Structural equation modeling
+- No causal inference
+- Single-country analysis
+- Forecast depends on assumed growth rates
 
 ---
 
-## 🧠 Technical Highlights
+## 🚀 Technical Highlights
 
-- Layered data architecture (Bronze/Silver/Gold)
+- End-to-end Medallion architecture
 - Reproducible ML pipeline
-- Modular script structure
-- Automatic HTML reporting
-- Separation of training and forecasting logic
-- Academic + production-grade repository structure
+- Modular scripts
+- Automated HTML reporting
+- Separation of ingestion, modeling and forecasting
 
 ---
 
-## 📌 Academic Context
+## 📌 Why This Project Matters
 
-This repository supports an academic research project investigating digital transformation impact on economic performance using reproducible machine learning pipelines.
+This project connects:
+- Data Engineering
+- Machine Learning
+- Economic analysis
 
-The complete implementation (data processing, modeling, forecasting, reporting) is fully available in this repository.
+Using real-world data in a production-style pipeline.
 
 ---
 
@@ -212,8 +259,6 @@ MBA in Data Science & Analytics
 
 ---
 
-## 📎 Citation (for academic reference)
+## 📎 Repository
 
-The full reproducible implementation is available at:
-
-https://github.com/Mauricio1806/eurostat_ml
+https://github.com/Mauricio1806
